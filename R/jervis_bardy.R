@@ -1,18 +1,19 @@
 #' CalcSpearmanMatrix() Function
 #'
 #' Function to calculate spearman correlation of OTU abundance to DNA concentration
+#' Thanks to David Waite for the original verison of this code. :)
 #'
 #' Returns a list of 3 matrices:
 #'  * retMatrix -- full matrix of results (Rho, P.value, FDR)
 #'  * negSigMatrix -- subset to stat sig (p < 0.05) and negatively correlated OTUs
 #'  * posSigMatrix -- subset to stat sig (p < 0.05) and positively correlated OTUs
 #'
-#' @param otuMatrix (otu_table(phyloseq_object)) works fine
-#' @param intensityVector list of concentrations in the same order (sample_data(phyloseq_object)$Concentration)
+#' @param otuMatrix otu_table(phyloseq_object) works fine
+#' @param intensityVector list of concentrations in the same order, aka: sample_data(phyloseq_object)$Concentration
 #' @keywords spearman, correlation, jervis-bardy, contamination
 #' @export
 #' @examples
-#' JB_corr <- CalcSpearmanMatrix(phyloseq::otu_table(ps$r),phyloseq::sample_data(psc$r)$DNA_Concentration)
+#' JB_corr <- CalcSpearmanMatrix(phyloseq::otu_table(ps),phyloseq::sample_data(ps)$DNA_Concentration)
 CalcSpearmanMatrix = function(otuMatrix, intensityVector) {
 
   #check whether the matrix needs to be transposed
@@ -49,7 +50,7 @@ CalcSpearmanMatrix = function(otuMatrix, intensityVector) {
   pos <-  retMatrix[ ,1] > 0
   posMatrix <- retMatrix[pos, ] #subset to the negatively correlated ones
 
-  #then subset to jsut the statsig ones ( p < 0.05)
+  #then subset to just the statsig ones ( p < 0.05)
   negsig <- negMatrix[ ,2] < 0.05
   negSigMatrix <- negMatrix[negsig, ] #subset to the statsig ones
   possig <- posMatrix[ ,2] < 0.05
