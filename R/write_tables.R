@@ -54,17 +54,15 @@ CreateTables = function (physeq, metadata, cnames, key = "SampleID", otu_map = N
   #append the sequences to the master table if specified
   if (!is.null(otu_map)) {
     lookup_id = function(seqid, omap) {
-      r <- as.character(omap[which(omap$SeqID == seqid),
-                             2])
+      r <- as.character(omap[which(omap$SeqID == seqid), 2])
     }
-    seqs <- unlist(lapply(rownames(otu_tax_table), function(x) lookup_id(x,
-                                                                         otu_map)))
+    seqs <- unlist(lapply(rownames(otu_tax_table), function(x) lookup_id(x, otu_map)))
     otu_tax_table <- cbind(otu_tax_table, data.frame(Sequence = seqs))
   }
   
   #return the set of tables
-  ret <- list(sum = sum_table, otu = classic_otu_table, tax = classic_tax_table,
-              master = otu_tax_table)
+  ret <- list(sum = sum_table, otu = classic_otu_table, 
+              tax = classic_tax_table, master = otu_tax_table)
   return(ret)
 }
 
@@ -124,15 +122,8 @@ CreateTablesSeqIDs = function(physeq, metadata, cnames, key="SampleID"){
   otu_mapping <- cbind(otu_id,seq)
 
   #create a "classic" otu table with the new seq ids
-  #for some reason I can't get rownames_to_column() to work here
   classic_otu_table <- as.data.frame(otus)
   colnames(classic_otu_table) <- otu_id
-  #print(sort(rownames(classic_otu_table)))
-  #print(length(rownames(classic_otu_table)))
-  #print(length(unique(rownames(classic_otu_table))))
-  #print(nrow(classic_otu_table))
-  #classic_otu_table <- as.data.frame(classic_otu_table)
-  #classic_otu_table <- tibble::rownames_to_column(as_tibble(classic_otu_table), var=key)
 
   #create a "classic" taxonomy table with the new seq ids
   classic_tax_table <- as.data.frame(phyloseq::tax_table(physeq))
@@ -141,7 +132,7 @@ CreateTablesSeqIDs = function(physeq, metadata, cnames, key="SampleID"){
 
   #create a "mapping" otu_id -> sequence list in fasta format
   fasta <- as.data.frame(otu_mapping) %>%
-    mutate(fasta = paste(">",otu_id,"\n",seq,"\n",sep="") )
+                mutate(fasta = paste(">",otu_id,"\n",seq,"\n",sep="") )
   fasta <- fasta$fasta
 
   #create a master OTU table with counts, taxonomy, and sequence all together
@@ -149,6 +140,7 @@ CreateTablesSeqIDs = function(physeq, metadata, cnames, key="SampleID"){
   otu_tax_table <- cbind(otu_tax_table,otu_mapping[ ,"seq"])
   colnames(otu_tax_table)[length(colnames(otu_tax_table))] = "Sequence"
 
+  #return all the tables
   ret <- list(sum=sum_table, otu=classic_otu_table, tax=classic_tax_table,
               fasta=fasta, master=otu_tax_table)
 
