@@ -19,37 +19,50 @@
 #' write.csv(ret$otu, "otu_table.csv")
 #' write.csv(ret$tax, "tax_table.csv")
 #' cat(sapply(ret$fasta, toString), file="otu_mapping.fasta", sep="")
-CreateTables = function (physeq, metadata, cnames, key = "SampleID", otu_map = NA)
+CreateTables = function (physeq, metadata, cnames, key = "SampleID", otu_map = NULL)
 {
   otus <- phyloseq::otu_table(physeq)
-  metadata <- suppressWarnings(as.matrix(metadata))
+  metadata <- suppressWarnings(as.matrix(metadata))#remove any lingering sample_data() object stuff
+  
+  #check whether the matrix needs to be transposed
   nsamples <- nrow(phyloseq::sample_data(physeq)[, key])
   if (nsamples != nrow(otus)) {
     otus <- t(otus)
   }
+  
+  #initialise the summary table
   sum_table <- as.data.frame(otus)[, 0]
   sum_table <- as.data.frame(cbind(sum_table, row.names(sum_table)))
   names(sum_table) <- c(key)
+  
+  #add column of total classified read counts for each sample
   df <- as.data.frame(t(as.data.frame(otus)))
   counts <- t(summarise_all(df, funs(sum)))
   counts <- as.data.frame(cbind(counts, row.names(counts)))
   names(counts) <- c("ClassifiedReads", key)
   sum_table <- merge(sum_table, counts, by = key)
+  
+  #merge the two together & add the metadata
   meta <- metadata[, cnames]
   sum_table <- merge(sum_table, meta, by = key)
+  
+  #format and merge the otu & tax tables
   classic_otu_table <- as.data.frame(otus)
   classic_tax_table <- as.data.frame(phyloseq::tax_table(physeq))
   otu_tax_table <- cbind(t(classic_otu_table), classic_tax_table)
-  if (!is.na(otu_map)) {
+  
+  #append the sequences to the master table if specified
+  if (!is.null(otu_map)) {
     lookup_id = function(seqid, omap) {
       r <- as.character(omap[which(omap$SeqID == seqid),
                              2])
     }
-    print(rownames(otu_tax_table))
     seqs <- unlist(lapply(rownames(otu_tax_table), function(x) lookup_id(x,
                                                                          otu_map)))
     otu_tax_table <- cbind(otu_tax_table, data.frame(Sequence = seqs))
   }
+  
+  #return the set of tables
   ret <- list(sum = sum_table, otu = classic_otu_table, tax = classic_tax_table,
               master = otu_tax_table)
   return(ret)

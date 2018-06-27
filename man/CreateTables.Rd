@@ -4,7 +4,7 @@
 \alias{CreateTables}
 \title{CreateTables Function}
 \usage{
-CreateTables(physeq, metadata, cnames, key = "SampleID", otu_map = NA)
+CreateTables(physeq, metadata, cnames, key = "SampleID", otu_map = NULL)
 }
 \arguments{
 \item{physeq}{phyloseq object to convert}
