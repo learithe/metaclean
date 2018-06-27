@@ -7,12 +7,13 @@
 CalcSpearmanMatrix(otuMatrix, intensityVector)
 }
 \arguments{
-\item{otuMatrix}{(otu_table(phyloseq_object)) works fine}
+\item{otuMatrix}{otu_table(phyloseq_object) works fine}
 
-\item{intensityVector}{list of concentrations in the same order (sample_data(phyloseq_object)$Concentration)}
+\item{intensityVector}{list of concentrations in the same order, aka: sample_data(phyloseq_object)$Concentration}
 }
 \description{
 Function to calculate spearman correlation of OTU abundance to DNA concentration
+Thanks to David Waite for the original verison of this code. :)
 }
 \details{
 Returns a list of 3 matrices:
@@ -21,7 +22,7 @@ Returns a list of 3 matrices:
  * posSigMatrix -- subset to stat sig (p < 0.05) and positively correlated OTUs
 }
 \examples{
-JB_corr <- CalcSpearmanMatrix(phyloseq::otu_table(ps$r),phyloseq::sample_data(psc$r)$DNA_Concentration)
+JB_corr <- CalcSpearmanMatrix(phyloseq::otu_table(ps),phyloseq::sample_data(ps)$DNA_Concentration)
 }
 \keyword{contamination}
 \keyword{correlation,}
