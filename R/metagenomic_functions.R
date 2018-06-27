@@ -34,7 +34,6 @@ RemoveTaxa = function(physeq, badTaxa, prune=FALSE){
 #' ps_blanks <- SubsetSamples(ps, blank_samples)
 SubsetSamples = function(physeq, samplelist){
 
-  #generate phyloseq objects for just the blank samples
   ps <- phyloseq::prune_samples(samplelist, physeq)  #subset to just the chosen samples
   ps <- phyloseq::filter_taxa(ps, function(x) sum(x) > 0, TRUE) #subset to just taxa that contain reads in these samples
 
@@ -65,7 +64,9 @@ CreateRelabund = function(physeq, filt=FALSE){
   psr  = phyloseq::transform_sample_counts(physeq, function(x) x / sum(x) )
 
   #replace NaNs generated where sum(x) = 0 with 0's
-  t <- phyloseq::otu_table(psr);  t[is.na(t)] <- 0; phyloseq::otu_table(psr) <- t
+  tmp <- phyloseq::otu_table(psr)  
+  tmp[is.na(tmp)] <- 0
+  phyloseq::otu_table(psr) <- tmp
 
   #prepare list of ps objects to return
   ps <- list(orig=physeq, r=psr)
