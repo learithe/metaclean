@@ -128,3 +128,52 @@ ReplaceSeqIDs = function(physeq, fastafile){
   return( list(physeq=ps, otu_map=otu_mapping) )
 
 }
+
+
+
+#' ExtendPlastidTax Function
+#'
+#' The dada2 silva_v128 taxonomy database only classifies mitochondria to
+#' Family and chloroplasts to Class level. This is problematic when these taxa 
+#' have (deliberately) not been removed from the dataset, are present in 
+#' significant amounts, and one wants to look at distributions at lower
+#' taxonomy levels.
+#' 
+#' This function takes a phyloseq object with this problem, and fills in 
+#' the taxonomy table for these plastids down the the lowest level
+#' (either Genus or Species)
+#'
+#' @param physeq phyloseq object to correct
+#' @keywords phyloseq, dada2, taxonomy
+#' @export
+#' @examples
+#' ps <- ExtendPlastids(ps)
+#' #to check that it worked:
+#' df <- as.data.frame(tax_table(ps))
+#' filter( df[which(df$Family == "Mitochondria"), ] )[1:3, ]
+ExtendPlastidTax = function(ps){
+  
+  tax <- as.data.frame(tax_table(ps))
+  names <- rownames(tax)
+  tax[] <- lapply(tax, as.character)
+  
+  tax <- tax %>%
+    mutate(Genus=replace(Genus, Family=="Mitochondria", "Mitochondria")) %>%
+    mutate(Genus=replace(Genus, Class=="Chloroplast", "Chloroplast")) %>%
+    mutate(Family=replace(Family, Class=="Chloroplast", "Chloroplast")) %>%
+    mutate(Order=replace(Order, Class=="Chloroplast", "Chloroplast")) %>%
+    as.data.frame()
+  
+  if("Species" %in% colnames(tax)){
+    tax <- tax %>%
+      mutate(Species=replace(Species, Family=="Mitochondria", "Mitochondria")) %>%
+      mutate(Species=replace(Species, Class=="Chloroplast", "Chloroplast")) %>%
+      as.data.frame()     
+  }  
+  
+  rownames(tax) <- names
+  tax <- as.matrix(tax)
+  
+  ps2 <- phyloseq( otu_table(ps), tax_table(tax), sample_data(ps))
+  return(ps2)
+}
