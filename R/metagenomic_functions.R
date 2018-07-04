@@ -33,6 +33,13 @@ RemoveTaxa = function(physeq, badTaxa, prune=FALSE){
 #' @examples
 #' ps_blanks <- SubsetSamples(ps, blank_samples)
 SubsetSamples = function(physeq, samplelist){
+  
+  #sanity check, because prune_samples error msg is too vague
+  is_subset = samplelist %in% rownames(otu_table(physeq))
+  if( !any(is_subset) ){
+    warning("Fatal Error in SubsetSamples(): no ID's in samplelist were found in the physeq sample IDs")
+    return(NULL)
+  }
 
   ps <- phyloseq::prune_samples(samplelist, physeq)  #subset to just the chosen samples
   ps <- phyloseq::filter_taxa(ps, function(x) sum(x) > 0, TRUE) #subset to just taxa that contain reads in these samples
